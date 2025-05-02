@@ -1,7 +1,7 @@
 import streamlit as st
 import mysql.connector
 import pandas as pd
-
+import plotly.express as px
 # MySQL connection function
 def get_connection():
     return mysql.connector.connect(
@@ -44,10 +44,29 @@ def login():
             st.error("Invalid credentials")
 
 # Main app
+
+
 def main():
     st.title("💡 Street Light Monitoring System")
+
     df = fetch_data()
+
+    st.subheader("📊 Raw Data")
     st.dataframe(df)
+
+    # Choose what to visualize
+    option = st.selectbox("Select parameter to visualize", ["Current", "Voltage"])
+
+    if option == "Current":
+        labels = ['Current1', 'Current2', 'Current3']
+        values = df[labels].astype(float).sum()
+        fig = px.pie(values=values, names=labels, title="Current Distribution")
+    else:
+        labels = ['Vtg1', 'Vtg2', 'Vtg3']
+        values = df[labels].astype(float).sum()
+        fig = px.pie(values=values, names=labels, title="Voltage Distribution")
+
+    st.plotly_chart(fig)
 
 if not st.session_state.logged_in:
     login()
