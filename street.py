@@ -75,7 +75,7 @@ def main():
     fig = go.Figure(data=[go.Pie(
         labels=display_labels,
         values=numeric_values,
-        
+        textinfo='label',
         hoverinfo='label+value'
     )])
 
