@@ -59,11 +59,11 @@ def main():
 
     if option == "Current":
         labels = ['Current1', 'Current2', 'Current3']
-        values = df[labels].astype(float).sum()
+        values = df[labels].replace('[^0-9.]', '', regex=True).astype(float).sum()
         fig = px.pie(values=values, names=labels, title="Current Distribution")
     else:
         labels = ['Vtg1', 'Vtg2', 'Vtg3']
-        values = df[labels].astype(float).sum()
+        values = df[labels].replace('[^0-9.]', '', regex=True).astype(float).sum()
         fig = px.pie(values=values, names=labels, title="Voltage Distribution")
 
     st.plotly_chart(fig)
