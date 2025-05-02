@@ -2,6 +2,7 @@ import streamlit as st
 import mysql.connector
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 # MySQL connection function
 def get_connection():
     return mysql.connector.connect(
@@ -59,15 +60,28 @@ def main():
 
     if option == "Current":
         labels = ['Current1', 'Current2', 'Current3']
-        values = df[labels].replace('[^0-9.]', '', regex=True).astype(float).sum()
-        fig = px.pie(values=values, names=labels, title="Current Distribution")
     else:
         labels = ['Vtg1', 'Vtg2', 'Vtg3']
-        values = df[labels].replace('[^0-9.]', '', regex=True).astype(float).sum()
-        fig = px.pie(values=values, names=labels, title="Voltage Distribution")
+
+    # Get latest row (or average/sum if you prefer)
+    latest = df.iloc[-1]  # last row
+
+    # Raw display values with units
+    display_labels = [f"{col}: {latest[col]}" for col in labels]
+
+    # Numeric values for plotting
+    numeric_values = latest[labels].replace('[^0-9.]', '', regex=True).astype(float)
+
+    fig = go.Figure(data=[go.Pie(
+        labels=display_labels,
+        values=numeric_values,
+        textinfo='label+percent',
+        hoverinfo='label+value'
+    )])
+
+    fig.update_layout(title="Distribution of " + option)
 
     st.plotly_chart(fig)
-
 if not st.session_state.logged_in:
     login()
 else:
