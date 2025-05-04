@@ -121,11 +121,12 @@ def bulb_status():
         st.markdown("---")
         
         # Display status summary
+        bulbs = [str(status['bulb1']).strip(), str(status['bulb2']).strip(), str(status['bulb3']).strip()]
         status_counts = {
-            "OFF (0)": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3'] if str(bulb).strip() == "0"),
-            "Lower Watt (1)": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3']] if str(bulb).strip() == "1"),
-            "Higher Watt (2)": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3']] if str(bulb).strip() == "2"),
-            "Unknown": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3']] if str(bulb).strip() not in ["0", "1", "2"])
+            "OFF (0)": sum(1 for bulb in bulbs if bulb == "0"),
+            "Lower Watt (1)": sum(1 for bulb in bulbs if bulb == "1"),
+            "Higher Watt (2)": sum(1 for bulb in bulbs if bulb == "2"),
+            "Unknown": sum(1 for bulb in bulbs if bulb not in ["0", "1", "2"])
         }
         
         st.subheader("📊 Status Summary")
