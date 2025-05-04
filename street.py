@@ -46,7 +46,6 @@ def login():
 
 # Main app
 
-
 def main():
     st.title("💡 Street Light Monitoring System")
 
@@ -55,7 +54,6 @@ def main():
     st.subheader("📊 Raw Data")
     st.dataframe(df)
 
-    # Choose what to visualize
     option = st.selectbox("Select parameter to visualize", ["Current", "Voltage"])
 
     if option == "Current":
@@ -63,14 +61,17 @@ def main():
     else:
         labels = ['Vtg1', 'Vtg2', 'Vtg3']
 
-    # Get latest row (or average/sum if you prefer)
-    latest = df.iloc[-1]  # last row
+    # Ensure 'id' column is numeric
+    df['id'] = pd.to_numeric(df['id'], errors='coerce')
+
+    # Get the row with maximum 'id'
+    latest = df.loc[df['id'].idxmax()]
 
     # Raw display values with units
     display_labels = [f"{col}: {latest[col]}" for col in labels]
 
     # Numeric values for plotting
-    numeric_values = latest[labels].replace('[^0-9.]', '', regex=True).astype(float)
+    numeric_values = pd.to_numeric(latest[labels].replace('[^0-9.]', '', regex=True), errors='coerce')
 
     fig = go.Figure(data=[go.Pie(
         labels=display_labels,
@@ -82,6 +83,7 @@ def main():
     fig.update_layout(title="Distribution of " + option)
 
     st.plotly_chart(fig)
+
 if not st.session_state.logged_in:
     login()
 else:
