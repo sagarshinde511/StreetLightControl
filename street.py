@@ -12,14 +12,23 @@ def get_connection():
         database="u263681140_students"
     )
 
-# Function to fetch data
+# Function to fetch all data
 def fetch_data():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM StreetLight")
+    cursor.execute("SELECT * FROM StreetLightStatus")
     data = cursor.fetchall()
     conn.close()
     return pd.DataFrame(data)
+
+# Function to fetch only bulb statuses
+def fetch_bulb_status():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT bulb1, bulb2, bulb3 FROM StreetLightStatus ORDER BY id DESC LIMIT 1")
+    status = cursor.fetchone()
+    conn.close()
+    return status
 
 # Login credentials (for demo - consider using secure auth in production)
 USER_CREDENTIALS = {
@@ -43,6 +52,18 @@ def login():
             st.experimental_rerun()
         else:
             st.error("Invalid credentials")
+
+# Function to display bulb status with appropriate styling
+def display_bulb_status(bulb_name, status):
+    status = str(status).strip()  # Convert to string and remove whitespace
+    if status == "0":
+        st.error(f"🔴 {bulb_name}: OFF")
+    elif status == "1":
+        st.warning(f"🟡 {bulb_name}: Lower Watt Bulb ON")
+    elif status == "2":
+        st.success(f"🟢 {bulb_name}: Higher Watt Bulb ON")
+    else:
+        st.info(f"🔵 {bulb_name}: Unknown Status ({status})")
 
 # Tab 1: Main dashboard function
 def dashboard():
@@ -88,18 +109,37 @@ def bulb_status():
     st.title("💡 Bulb Status")
     st.header("📌 Current Bulb Status Information")
     
-    df = fetch_data()
-    latest = df.loc[df['id'].idxmax()]
+    status = fetch_bulb_status()
     
-    # You can customize this as needed depending on available columns
-    bulb_info = {
-        "Bulb1": latest.get("Bulb1", "Unknown"),
-        "Bulb2": latest.get("Bulb2", "Unknown"),
-        "Bulb3": latest.get("Bulb3", "Unknown")
-    }
-
-    for key, status in bulb_info.items():
-        st.write(f"🔹 {key} Status: {status}")
+    if status:
+        # Display each bulb's status with appropriate styling
+        display_bulb_status("Bulb 1", status['bulb1'])
+        display_bulb_status("Bulb 2", status['bulb2'])
+        display_bulb_status("Bulb 3", status['bulb3'])
+        
+        # Add visual divider
+        st.markdown("---")
+        
+        # Display status summary
+        status_counts = {
+            "OFF (0)": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3'] if str(bulb).strip() == "0"),
+            "Lower Watt (1)": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3']] if str(bulb).strip() == "1"),
+            "Higher Watt (2)": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3']] if str(bulb).strip() == "2"),
+            "Unknown": sum(1 for bulb in [status['bulb1'], status['bulb2'], status['bulb3']] if str(bulb).strip() not in ["0", "1", "2"])
+        }
+        
+        st.subheader("📊 Status Summary")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("OFF", status_counts["OFF (0)"])
+        with col2:
+            st.metric("Lower Watt", status_counts["Lower Watt (1)"])
+        with col3:
+            st.metric("Higher Watt", status_counts["Higher Watt (2)"])
+        with col4:
+            st.metric("Unknown", status_counts["Unknown"])
+    else:
+        st.warning("No bulb status data available")
 
 # Main app with tabs
 def main_app():
