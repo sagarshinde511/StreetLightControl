@@ -1,8 +1,8 @@
 import streamlit as st
 import mysql.connector
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
+
 # MySQL connection function
 def get_connection():
     return mysql.connector.connect(
@@ -44,9 +44,8 @@ def login():
         else:
             st.error("Invalid credentials")
 
-# Main app
-
-def main():
+# Tab 1: Main dashboard function
+def dashboard():
     st.title("💡 Street Light Monitoring System")
 
     df = fetch_data()
@@ -84,7 +83,36 @@ def main():
 
     st.plotly_chart(fig)
 
+# Tab 2: Bulb status display
+def bulb_status():
+    st.title("💡 Bulb Status")
+    st.header("📌 Current Bulb Status Information")
+    
+    df = fetch_data()
+    latest = df.loc[df['id'].idxmax()]
+    
+    # You can customize this as needed depending on available columns
+    bulb_info = {
+        "Bulb1": latest.get("Bulb1", "Unknown"),
+        "Bulb2": latest.get("Bulb2", "Unknown"),
+        "Bulb3": latest.get("Bulb3", "Unknown")
+    }
+
+    for key, status in bulb_info.items():
+        st.write(f"🔹 {key} Status: {status}")
+
+# Main app with tabs
+def main_app():
+    tab1, tab2 = st.tabs(["📊 Dashboard", "💡 Bulb Status"])
+    
+    with tab1:
+        dashboard()
+    
+    with tab2:
+        bulb_status()
+
+# Entry point
 if not st.session_state.logged_in:
     login()
 else:
-    main()
+    main_app()
