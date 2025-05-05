@@ -119,13 +119,6 @@ def date_management_tab():
 
     df = fetch_data()
 
-    # Ensure 'DateTime' is parsed as datetime and extract just the date
-    df['DateTime'] = pd.to_datetime(df['DateTime'], errors='coerce')
-    df['only_date'] = df['DateTime'].dt.date
-
-    # Get min/max available dates
-    min_date = df['only_date'].min()
-    max_date = df['only_date'].max()
 
     # Radio button for action
     action = st.radio("Select Action", ["Show Raw Data", "Delete Selected Data"])
@@ -137,6 +130,14 @@ def date_management_tab():
     with col1:
         from_date = st.date_input("From Date", min_value=min_date, max_value=max_date, value=min_date)
     with col2:
+        
+        # Ensure 'DateTime' is parsed as datetime and extract just the date
+        df['DateTime'] = pd.to_datetime(df['DateTime'], errors='coerce')
+        df['only_date'] = df['DateTime'].dt.date
+    
+        # Get min/max available dates
+        min_date = df['only_date'].min()
+        max_date = df['only_date'].max()
         to_date = st.date_input("To Date", min_value=min_date, max_value=max_date, value=max_date)
 
     if from_date > to_date:
