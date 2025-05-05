@@ -113,33 +113,38 @@ def bulb_status():
     st.write("🔸 Bulb1 Status:", interpret_status(latest.get("bulb1", "Unknown")))
     st.write("🔸 Bulb2 Status:", interpret_status(latest.get("bulb2", "Unknown")))
     st.write("🔸 Bulb3 Status:", interpret_status(latest.get("bulb3", "Unknown")))
+    
 def date_management_tab():
-    #st.title("🗓️ Date-based Data Management")
+    st.title("🗓️ Manage Data by Date")
 
     df = fetch_data()
 
-    # Ensure 'Date' column is datetime (replace 'your_date_column' with actual column)
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Replace 'Date' with actual column name
+    # Ensure 'DateTime' is parsed as datetime and extract just the date
+    df['DateTime'] = pd.to_datetime(df['DateTime'], errors='coerce')
+    df['only_date'] = df['DateTime'].dt.date
 
-    min_date = df['Date'].min().date()
-    max_date = df['Date'].max().date()
+    # Get min/max available dates
+    min_date = df['only_date'].min()
+    max_date = df['only_date'].max()
 
+    # Radio button for action
+    action = st.radio("Select Action", ["Show Raw Data", "Delete Selected Data"])
+
+    # Date inputs
     st.subheader("📅 Select Date Range")
     col1, col2 = st.columns(2)
 
     with col1:
         from_date = st.date_input("From Date", min_value=min_date, max_value=max_date, value=min_date)
-
     with col2:
         to_date = st.date_input("To Date", min_value=min_date, max_value=max_date, value=max_date)
-
-    action = st.radio("Choose Action", ["Show Raw Data", "Delete Selected Data"])
 
     if from_date > to_date:
         st.warning("⚠️ 'From Date' must be earlier than or equal to 'To Date'")
         return
 
-    mask = (df['Date'] >= pd.to_datetime(from_date)) & (df['Date'] <= pd.to_datetime(to_date))
+    # Filter DataFrame based on selected date range
+    mask = (df['only_date'] >= from_date) & (df['only_date'] <= to_date)
     filtered_df = df.loc[mask]
 
     if action == "Show Raw Data":
@@ -147,21 +152,21 @@ def date_management_tab():
         st.dataframe(filtered_df)
 
     elif action == "Delete Selected Data":
-        if st.button("❌ Delete Data in Date Range"):
+        st.warning("⚠️ This will permanently delete data in the selected range.")
+        if st.button("❌ Confirm Deletion"):
             conn = get_connection()
             cursor = conn.cursor()
-            query = "DELETE FROM StreetLight WHERE Date BETWEEN %s AND %s"
-            cursor.execute(query, (from_date, to_date))
+            delete_query = "DELETE FROM StreetLight WHERE DATE(DateTime) BETWEEN %s AND %s"
+            cursor.execute(delete_query, (from_date, to_date))
             conn.commit()
             conn.close()
             st.success("✅ Data deleted successfully!")
-
 # Main app with tabs
 def main_app():
     # Auto-refresh every 5 seconds (5000 milliseconds)
     st_autorefresh(interval= 10000, limit=None, key="auto-refresh")
 
-    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "💡 Bulb Status", "📊 Raw Data"])
+    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "💡 Bulb Status", "🗓️ Manage by Date"])
     
     with tab1:
         dashboard()
@@ -170,11 +175,9 @@ def main_app():
         bulb_status()
     with tab3:
         
-        df = fetch_data()
+        #df = fetch_data()
     
-        st.subheader("📊 Raw Data")
-        st.dataframe(df)
-
+        
         date_management_tab()
 
         
