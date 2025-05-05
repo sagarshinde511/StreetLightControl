@@ -2,6 +2,7 @@ import streamlit as st
 import mysql.connector
 import pandas as pd
 import plotly.graph_objects as go
+from streamlit_autorefresh import st_autorefresh
 
 # MySQL connection function
 def get_connection():
@@ -114,6 +115,9 @@ def bulb_status():
     st.write("🔸 Bulb3 Status:", interpret_status(latest.get("bulb3", "Unknown")))
 # Main app with tabs
 def main_app():
+    # Auto-refresh every 5 seconds (5000 milliseconds)
+    st_autorefresh(interval=5000, limit=None, key="auto-refresh")
+
     tab1, tab2 = st.tabs(["📊 Dashboard", "💡 Bulb Status"])
     
     with tab1:
