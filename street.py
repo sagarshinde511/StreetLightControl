@@ -14,13 +14,7 @@ def get_connection():
 
 
 def fetch_dataBulb():
-    connection = mysql.connector.connect(
-        host='localhost',
-        user='your_username',
-        password='your_password',
-        database='your_database'
-    )
-
+    connection = get_connection()
     query = "SELECT bulb1, bulb2, bulb3 FROM StreetLightStatus WHERE id = 1"
     df = pd.read_sql(query, connection)
     connection.close()
