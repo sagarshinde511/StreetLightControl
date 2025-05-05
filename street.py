@@ -126,6 +126,10 @@ def date_management_tab():
     # Date inputs
     st.subheader("📅 Select Date Range")
     col1, col2 = st.columns(2)
+    # Get min/max available dates
+    min_date = df['only_date'].min()
+    max_date = df['only_date'].max()
+    to_date = st.date_input("To Date", min_value=min_date, max_value=max_date, value=max_date)
 
     with col1:
         from_date = st.date_input("From Date", min_value=min_date, max_value=max_date, value=min_date)
@@ -135,11 +139,7 @@ def date_management_tab():
         df['DateTime'] = pd.to_datetime(df['DateTime'], errors='coerce')
         df['only_date'] = df['DateTime'].dt.date
     
-        # Get min/max available dates
-        min_date = df['only_date'].min()
-        max_date = df['only_date'].max()
-        to_date = st.date_input("To Date", min_value=min_date, max_value=max_date, value=max_date)
-
+ 
     if from_date > to_date:
         st.warning("⚠️ 'From Date' must be earlier than or equal to 'To Date'")
         return
@@ -153,6 +153,7 @@ def date_management_tab():
         st.dataframe(filtered_df)
 
     elif action == "Delete Selected Data":
+        
         st.warning("⚠️ This will permanently delete data in the selected range.")
         if st.button("❌ Confirm Deletion"):
             conn = get_connection()
