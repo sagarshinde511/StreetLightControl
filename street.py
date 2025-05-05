@@ -97,8 +97,8 @@ def bulb_status():
     st.header("📌 Current Bulb Status Information")
     
     df = fetch_dataBulb()
-    latest = df[df['id'] == 1].iloc[0]  # Fetch the row where id == 1
-    
+    #latest = df[df['id'] == 1].iloc[0]  # Fetch the row where id == 1
+    latest = df.iloc[0]     
     def interpret_status(value):
         if str(value) == '0':
             return "🔴 Bulb is OFF"
