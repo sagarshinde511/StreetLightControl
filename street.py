@@ -56,10 +56,10 @@ def login():
 def dashboard():
     st.title("💡 Street Light Monitoring System")
 
-    df = fetch_data()
+    #df = fetch_data()
 
-    st.subheader("📊 Raw Data")
-    st.dataframe(df)
+    #st.subheader("📊 Raw Data")
+    #st.dataframe(df)
 
     option = st.selectbox("Select parameter to visualize", ["Current", "Voltage"])
 
@@ -116,15 +116,23 @@ def bulb_status():
 # Main app with tabs
 def main_app():
     # Auto-refresh every 5 seconds (5000 milliseconds)
-    st_autorefresh(interval=5000, limit=None, key="auto-refresh")
+    st_autorefresh(interval= 10000, limit=None, key="auto-refresh")
 
-    tab1, tab2 = st.tabs(["📊 Dashboard", "💡 Bulb Status"])
+    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "💡 Bulb Status", "📊 Raw Data"])
     
     with tab1:
         dashboard()
     
     with tab2:
         bulb_status()
+    with tab3:
+        
+        df = fetch_data()
+
+        st.subheader("📊 Raw Data")
+        st.dataframe(df)
+
+        
 
 # Entry point
 if not st.session_state.logged_in:
