@@ -113,6 +113,49 @@ def bulb_status():
     st.write("🔸 Bulb1 Status:", interpret_status(latest.get("bulb1", "Unknown")))
     st.write("🔸 Bulb2 Status:", interpret_status(latest.get("bulb2", "Unknown")))
     st.write("🔸 Bulb3 Status:", interpret_status(latest.get("bulb3", "Unknown")))
+def date_management_tab():
+    st.title("🗓️ Date-based Data Management")
+
+    df = fetch_data()
+
+    # Ensure 'Date' column is datetime (replace 'your_date_column' with actual column)
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Replace 'Date' with actual column name
+
+    min_date = df['Date'].min().date()
+    max_date = df['Date'].max().date()
+
+    st.subheader("📅 Select Date Range")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        from_date = st.date_input("From Date", min_value=min_date, max_value=max_date, value=min_date)
+
+    with col2:
+        to_date = st.date_input("To Date", min_value=min_date, max_value=max_date, value=max_date)
+
+    action = st.radio("Choose Action", ["Show Raw Data", "Delete Selected Data"])
+
+    if from_date > to_date:
+        st.warning("⚠️ 'From Date' must be earlier than or equal to 'To Date'")
+        return
+
+    mask = (df['Date'] >= pd.to_datetime(from_date)) & (df['Date'] <= pd.to_datetime(to_date))
+    filtered_df = df.loc[mask]
+
+    if action == "Show Raw Data":
+        st.subheader("📊 Filtered Data")
+        st.dataframe(filtered_df)
+
+    elif action == "Delete Selected Data":
+        if st.button("❌ Delete Data in Date Range"):
+            conn = get_connection()
+            cursor = conn.cursor()
+            query = "DELETE FROM StreetLight WHERE Date BETWEEN %s AND %s"
+            cursor.execute(query, (from_date, to_date))
+            conn.commit()
+            conn.close()
+            st.success("✅ Data deleted successfully!")
+
 # Main app with tabs
 def main_app():
     # Auto-refresh every 5 seconds (5000 milliseconds)
@@ -127,10 +170,7 @@ def main_app():
         bulb_status()
     with tab3:
         
-        df = fetch_data()
-
-        st.subheader("📊 Raw Data")
-        st.dataframe(df)
+        date_management_tab()
 
         
 
