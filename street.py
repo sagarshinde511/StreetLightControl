@@ -12,6 +12,19 @@ def get_connection():
         database="u263681140_students"
     )
 
+
+def fetch_dataBulb():
+    connection = mysql.connector.connect(
+        host='localhost',
+        user='your_username',
+        password='your_password',
+        database='your_database'
+    )
+
+    query = "SELECT bulb1, bulb2, bulb3 FROM StreetLightStatus WHERE id = 1"
+    df = pd.read_sql(query, connection)
+    connection.close()
+    return df
 # Function to fetch data
 def fetch_data():
     conn = get_connection()
@@ -84,23 +97,27 @@ def dashboard():
     st.plotly_chart(fig)
 
 # Tab 2: Bulb status display
+
 def bulb_status():
     st.title("💡 Bulb Status")
     st.header("📌 Current Bulb Status Information")
     
-    df = fetch_data()
-    latest = df.loc[df['id'].idxmax()]
+    df = fetch_dataBulb()
+    latest = df[df['id'] == 1].iloc[0]  # Fetch the row where id == 1
     
-    # You can customize this as needed depending on available columns
-    bulb_info = {
-        "Bulb1": latest.get("Bulb1", "Unknown"),
-        "Bulb2": latest.get("Bulb2", "Unknown"),
-        "Bulb3": latest.get("Bulb3", "Unknown")
-    }
+    def interpret_status(value):
+        if str(value) == '0':
+            return "🔴 Bulb is OFF"
+        elif str(value) == '1':
+            return "🟡 LowWatt Bulb is ON"
+        elif str(value) == '2':
+            return "🟢 HighWatt Bulb is ON"
+        else:
+            return "⚠️ Unknown Status"
 
-    for key, status in bulb_info.items():
-        st.write(f"🔹 {key} Status: {status}")
-
+    st.write("🔸 Bulb1 Status:", interpret_status(latest.get("bulb1", "Unknown")))
+    st.write("🔸 Bulb2 Status:", interpret_status(latest.get("bulb2", "Unknown")))
+    st.write("🔸 Bulb3 Status:", interpret_status(latest.get("bulb3", "Unknown")))
 # Main app with tabs
 def main_app():
     tab1, tab2 = st.tabs(["📊 Dashboard", "💡 Bulb Status"])
