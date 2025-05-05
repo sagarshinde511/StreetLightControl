@@ -56,7 +56,7 @@ def login():
 def dashboard():
     st.title("💡 Street Light Monitoring System")
 
-    #df = fetch_data()
+    df = fetch_data()
 
     #st.subheader("📊 Raw Data")
     #st.dataframe(df)
