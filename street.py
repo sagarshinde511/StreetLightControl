@@ -114,7 +114,7 @@ def bulb_status():
     st.write("🔸 Bulb2 Status:", interpret_status(latest.get("bulb2", "Unknown")))
     st.write("🔸 Bulb3 Status:", interpret_status(latest.get("bulb3", "Unknown")))
 def date_management_tab():
-    st.title("🗓️ Date-based Data Management")
+    #st.title("🗓️ Date-based Data Management")
 
     df = fetch_data()
 
