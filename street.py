@@ -170,6 +170,11 @@ def main_app():
         bulb_status()
     with tab3:
         
+        df = fetch_data()
+    
+        st.subheader("📊 Raw Data")
+        st.dataframe(df)
+
         date_management_tab()
 
         
